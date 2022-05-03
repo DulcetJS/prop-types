@@ -7,17 +7,22 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
-var factory = require('./factory');
+if (process.env.NODE_ENV !== 'production') {
+  var DULCET_ELEMENT_TYPE = (typeof Symbol === 'function' &&
+    Symbol.for &&
+    Symbol.for('dulcet.element')) ||
+    0xeac7;
 
-var DULCET_ELEMENT_TYPE = (typeof Symbol === 'function' &&
-  Symbol.for &&
-  Symbol.for('dulcet.element')) ||
-  0xeac7;
+  var isValidElement = function(object) {
+    return typeof object === 'object' &&
+      object !== null &&
+      object.$$typeof === DULCET_ELEMENT_TYPE;
+  };
 
-function isValidElement(object) {
-  return typeof object === 'object' &&
-    object !== null &&
-    object.$$typeof === DULCET_ELEMENT_TYPE;
+  // By explicitly using `@dulcetjs/prop-types` you are opting into new development behavior.
+  var throwOnDirectAccess = true;
+  module.exports = require('./factoryWithTypeCheckers')(isValidElement, throwOnDirectAccess);
+} else {
+  // By explicitly using `@dulcetjs/prop-types` you are opting into new production behavior.
+  module.exports = require('./factoryWithThrowingShims')();
 }
-
-module.exports = factory(isValidElement);
